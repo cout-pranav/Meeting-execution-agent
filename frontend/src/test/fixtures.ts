@@ -1,4 +1,4 @@
-import type { Conflict, Item } from "../types";
+import type { Conflict, Health, Item } from "../types";
 
 let nextId = 1;
 
@@ -32,6 +32,10 @@ export function makeConflict(overrides: Partial<Conflict> = {}): Conflict {
     prior_created_at: "2026-10-20T10:00:00.000Z",
     ...overrides,
   };
+}
+
+export function makeHealth(overrides: Partial<Health> = {}): Health {
+  return { status: "ok", db: true, gemini: true, github: "acme/repo", ...overrides };
 }
 
 /** A JSON Response for stubbing fetch. */
