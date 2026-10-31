@@ -1,3 +1,4 @@
+import { NavLink } from "react-router";
 import type { Dashboard } from "../lib/selectors";
 import type { Health } from "../types";
 import { Chip } from "./ui/Chip";
@@ -11,12 +12,13 @@ export function Sidebar({ d, health, healthErr }: Props) {
   const count = (n: number) => <span className="font-mono text-[11px] text-ink-2">{n}</span>;
 
   const nav = [
-    { href: "#ingest", icon: "move_to_inbox", label: "Ingestion", badge: d.pending.length ? <Chip tone="muted">{d.pending.length} pending</Chip> : null },
-    { href: "#conflicts", icon: "radar", label: "Conflict Radar", badge: d.openConflicts ? <Chip tone="bad">{d.openConflicts}</Chip> : null },
-    { href: "#review", icon: "fact_check", label: "Review Queue", badge: d.queue.length ? count(d.queue.length) : null },
-    { href: "#memory", icon: "database", label: "Memory Ledger", badge: count(d.memory.length) },
+    { to: "/", icon: "dashboard", label: "Overview", badge: null },
+    { to: "/ingest", icon: "move_to_inbox", label: "Ingestion", badge: d.pending.length ? <Chip tone="muted">{d.pending.length} pending</Chip> : null },
+    { to: "/conflicts", icon: "radar", label: "Conflict Radar", badge: d.openConflicts ? <Chip tone="bad">{d.openConflicts}</Chip> : null },
+    { to: "/review", icon: "fact_check", label: "Review Queue", badge: d.queue.length ? count(d.queue.length) : null },
+    { to: "/memory", icon: "database", label: "Memory Ledger", badge: count(d.memory.length) },
     {
-      href: "#tracker", icon: "sync_alt", label: "Tracker Dispatch",
+      to: "/tracker", icon: "sync_alt", label: "Tracker Dispatch",
       badge: (
         <span className="flex items-center gap-1 font-mono text-[11px] text-ink-2">
           <span className={`size-1.5 rounded-full ${health?.github ? "bg-ok" : "bg-ink-3"}`} />{health?.github ? "Active" : "Off"}
@@ -37,10 +39,16 @@ export function Sidebar({ d, health, healthErr }: Props) {
         </div>
         <nav className="mt-3 flex flex-col gap-0.5 px-3">
           {nav.map((n) => (
-            <a key={n.href} href={n.href} className="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-[13px] text-ink-2 transition-colors duration-150 hover:bg-raised hover:text-ink">
+            <NavLink
+              key={n.to}
+              to={n.to}
+              end
+              className={({ isActive }) =>
+                `flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-[13px] transition-colors duration-150 hover:bg-raised hover:text-ink ${isActive ? "bg-raised text-ink" : "text-ink-2"}`}
+            >
               <span className="flex items-center gap-2.5"><Icon name={n.icon} /> {n.label}</span>
               {n.badge}
-            </a>
+            </NavLink>
           ))}
         </nav>
       </div>

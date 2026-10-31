@@ -35,7 +35,7 @@ You write component tests for the Meeting Execution Agent dashboard (`frontend/`
   ```
 - Query in this order: `getByRole` with `name` > `getByLabelText` > `getByText`. Use `queryBy*` to check something is absent, `within(...)` to scope to a region or list, and `container.querySelector` only as a last resort (like the spinner check in `Button.test.tsx`).
 - Drive interaction with `await userEvent.click(...)` / `await userEvent.type(...)` and check exact callback arguments (`expect(onAct.mock.calls).toEqual([[id, "reject"]])`, `toHaveBeenCalledWith`).
-- Components don't fetch, except for `IngestForm`'s submit. For that case stub fetch: `vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse(body, status)))`, then assert with `waitFor`.
+- Components don't fetch, except for `IngestForm`'s submit (a TanStack Query mutation). Render it, and anything using `NavLink`, with `renderWithProviders` from `src/test/render.tsx`. Stub fetch: `vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse(body, status)))`; Axios calls `fetch(Request, init)`, so read what was sent with `sentRequest(input, init)` from `src/test/fixtures.ts`, then assert with `waitFor`.
 - Test what a user sees and does: rendered text, roles, accessible names, disabled and `aria-*` states, empty states, conditional branches, and callbacks. Don't assert Tailwind classes, internal state or implementation details.
 - Keep `it` names short and behavioral ("flags an action item with no deadline"). Use one `describe` per exported component.
 

@@ -47,7 +47,10 @@ Meeting-execution-agent/
 │   ├── vite.config.ts       # /api proxy → :3000, Vitest config
 │   ├── Dockerfile + nginx.conf
 │   └── src/
-│       ├── App.tsx          # layout composition
+│       ├── App.tsx          # QueryClient + Router providers
+│       ├── routes.tsx       # layout route + one page per sidebar tab
+│       ├── api.ts           # Axios client + typed API calls
+│       ├── hooks/queries.ts # TanStack Query hooks
 │       ├── hooks/useDashboard.ts
 │       ├── lib/             # format + deriveDashboard() selectors
 │       └── components/      # one file per section, ui/ primitives, *.test.tsx
@@ -140,5 +143,5 @@ These come back from [project-scope.md](project-scope.md) and [techstack.md](tec
 - VTT / SRT parsing; the participant roster and speaker → Slack/GitHub identity mapping
 - Shared-password dashboard auth
 - Drizzle ORM + migrations; pgvector embeddings for memory search at scale
-- React Router (multi-page), TanStack Query, editing items, a conflict-resolution workflow (supersede / keep both / escalate)
+- ~~React Router (multi-page), TanStack Query~~ (added, with Axios), editing items, a conflict-resolution workflow (supersede / keep both / escalate)
 - Stretch: syncing issue status back from GitHub, a "what did we decide about X?" query

@@ -1,11 +1,12 @@
-import { render, screen, within } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { deriveDashboard } from "../lib/selectors";
 import { makeConflict, makeHealth, makeItem } from "../test/fixtures";
+import { renderWithProviders } from "../test/render";
 import { Sidebar } from "./Sidebar";
 
-const renderSidebar = (props: Partial<Parameters<typeof Sidebar>[0]> = {}) =>
-  render(<Sidebar d={deriveDashboard([])} health={makeHealth()} healthErr={false} {...props} />);
+const renderSidebar = (props: Partial<Parameters<typeof Sidebar>[0]> = {}, route = "/") =>
+  renderWithProviders(<Sidebar d={deriveDashboard([])} health={makeHealth()} healthErr={false} {...props} />, { route });
 
 const link = (name: RegExp) => screen.getByRole("link", { name });
 
@@ -13,11 +14,19 @@ describe("Sidebar", () => {
   it("shows the brand and nav links", () => {
     renderSidebar();
     expect(screen.getByText("ConsensusOS")).toBeInTheDocument();
-    expect(link(/Ingestion/)).toHaveAttribute("href", "#ingest");
-    expect(link(/Conflict Radar/)).toHaveAttribute("href", "#conflicts");
-    expect(link(/Review Queue/)).toHaveAttribute("href", "#review");
-    expect(link(/Memory Ledger/)).toHaveAttribute("href", "#memory");
-    expect(link(/Tracker Dispatch/)).toHaveAttribute("href", "#tracker");
+    expect(link(/Overview/)).toHaveAttribute("href", "/");
+    expect(link(/Ingestion/)).toHaveAttribute("href", "/ingest");
+    expect(link(/Conflict Radar/)).toHaveAttribute("href", "/conflicts");
+    expect(link(/Review Queue/)).toHaveAttribute("href", "/review");
+    expect(link(/Memory Ledger/)).toHaveAttribute("href", "/memory");
+    expect(link(/Tracker Dispatch/)).toHaveAttribute("href", "/tracker");
+  });
+
+  it("marks only the current route's tab as active", () => {
+    renderSidebar({}, "/review");
+    expect(link(/Review Queue/)).toHaveAttribute("aria-current", "page");
+    expect(link(/Overview/)).not.toHaveAttribute("aria-current");
+    expect(link(/Ingestion/)).not.toHaveAttribute("aria-current");
   });
 
   it("hides empty badges", () => {

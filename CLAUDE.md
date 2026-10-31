@@ -16,7 +16,7 @@ An agent that turns speaker-labeled meeting transcripts into owned, tracked work
 The MVP is being built now, so **[implementation-plan.md](implementation-plan.md) overrides [techstack.md](techstack.md)** wherever they differ:
 - `Bun.sql` + `CREATE TABLE IF NOT EXISTS` on boot, not Drizzle/migrations
 - Prior decisions passed straight into the Gemini prompt, not pgvector
-- TXT `Speaker: text` only (no VTT/SRT); a single page (no React Router or TanStack Query)
+- TXT `Speaker: text` only (no VTT/SRT). The dashboard does use React Router (one route per sidebar tab) and TanStack Query + Axios: both were added on request after the MVP
 - Env var `GITHUB_REPO` (MVP), not `GITHUB_DEFAULT_REPO` (full stack)
 - Slack reminders and digests (F7/F8) are deferred
 
@@ -35,7 +35,7 @@ There are two projects:
 - **API** (repo root, `src/server/`): Bun + `Bun.serve` `/api/*` routes only · AI SDK (`ai`, `@ai-sdk/google`) with Gemini Flash and Zod `Output.object` · Octokit · Postgres via `Bun.sql`.
 - **Frontend** (`frontend/`): a separate Vite + React + TypeScript + Tailwind v4 app. Bun **does not serve it**. In dev, Vite proxies `/api` to :3000; in Docker, nginx serves `dist/` and proxies `/api` to the `app` container. Unit and component tests use Vitest + Testing Library + jsdom (`src/**/*.test.{ts,tsx}` only). End-to-end tests use Playwright (Chromium) in `frontend/e2e/`. By default (`mocked` project) they drive the real UI against an in-memory fake of the API (`e2e/support/fake-api.ts`, `page.route`), so they need no server, DB or keys. The opt-in `live` project (`e2e/live/`) runs against the real Bun API + Postgres + Gemini. Design tokens are in `frontend/src/styles.css`.
 
-Frontend structure: `App.tsx` only composes; state lives in `hooks/useDashboard.ts`; derived lists come from the pure `lib/selectors.ts` (`deriveDashboard`); each section is its own prop-driven component in `components/` with a colocated `*.test.tsx`; shared primitives are in `components/ui/`. Keep new UI in this shape: props in, callbacks out, no fetches inside components (except `IngestForm`'s submit).
+Frontend structure: `App.tsx` only mounts the providers (`QueryClientProvider` + `RouterProvider`); `routes.tsx` holds the layout route (Sidebar, Header, StatCards, `<Outlet>`) and one small page per sidebar tab (`/` overview, `/ingest`, `/conflicts`, `/review`, `/memory`, `/tracker`); HTTP goes through the Axios client and typed calls in `api.ts`; server state is TanStack Query hooks in `hooks/queries.ts`; `hooks/useDashboard.ts` combines them with the header notice and is handed to pages through the outlet context (`useDashboardContext`); derived lists come from the pure `lib/selectors.ts` (`deriveDashboard`); each section is its own prop-driven component in `components/` with a colocated `*.test.tsx`; shared primitives are in `components/ui/`. Keep new UI in this shape: props in, callbacks out, no fetches inside components (except `IngestForm`'s submit).
 
 ## Agents
 

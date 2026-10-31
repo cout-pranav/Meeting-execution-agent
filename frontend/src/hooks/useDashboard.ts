@@ -1,46 +1,48 @@
-import { useCallback, useEffect, useState } from "react";
-import { api } from "../api";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useOutletContext } from "react-router";
 import type { Notice } from "../components/Header";
 import { issueNumber } from "../lib/format";
-import type { Health, Item, ItemAction } from "../types";
+import { deriveDashboard } from "../lib/selectors";
+import type { ItemAction } from "../types";
+import { queryKeys, useBusyItemIds, useHealth, useItemAction, useItems } from "./queries";
 
-/** Loads items + health and runs approve/reject, tracking which items are in flight. */
+export type DashboardState = ReturnType<typeof useDashboard>;
+
+/** The views derived from the items + health from the query cache, approve/reject, and the header notice they report to. */
 export function useDashboard() {
-  const [items, setItems] = useState<Item[]>([]);
-  const [health, setHealth] = useState<Health | null>(null);
-  const [healthErr, setHealthErr] = useState(false);
-  const [busy, setBusy] = useState<Set<number>>(new Set());
+  const qc = useQueryClient();
+  const items = useItems();
+  const health = useHealth();
+  const busy = useBusyItemIds();
   const [notice, setNotice] = useState<Notice | null>(null);
 
-  const load = useCallback(async () => {
-    try {
-      setItems(await api<Item[]>("/api/items"));
-    } catch (e) {
-      setNotice({ tone: "bad", text: (e as Error).message });
-    }
-  }, []);
-
   useEffect(() => {
-    load();
-    api<Health>("/api/health").then(setHealth, () => setHealthErr(true));
-  }, [load]);
+    if (items.error) setNotice({ tone: "bad", text: items.error.message });
+  }, [items.error]);
 
-  async function act(id: number, action: ItemAction) {
-    setBusy((s) => new Set(s).add(id));
-    try {
-      const updated = await api<Item>(`/api/items/${id}/${action}`, {});
+  const action = useItemAction({
+    onSuccess: (updated, { action }) => {
       if (action === "approve" && updated.type === "action") {
         setNotice(updated.issue_url
           ? { tone: "ok", text: `GitHub issue #${issueNumber(updated.issue_url)} created` }
           : { tone: "warn", text: "Approved. No issue created because GitHub isn't configured." });
       }
-      await load();
-    } catch (e) {
-      setNotice({ tone: "bad", text: (e as Error).message });
-    } finally {
-      setBusy((s) => { const n = new Set(s); n.delete(id); return n; });
-    }
-  }
+    },
+    onError: (e) => setNotice({ tone: "bad", text: e.message }),
+  });
 
-  return { items, health, healthErr, notice, setNotice, load, act, isBusy: (id: number) => busy.has(id) };
+  return {
+    d: deriveDashboard(items.data ?? []),
+    health: health.data ?? null,
+    healthErr: health.isError,
+    notice,
+    setNotice,
+    refresh: () => qc.invalidateQueries({ queryKey: queryKeys.items }),
+    act: (id: number, act: ItemAction) => action.mutate({ id, action: act }),
+    isBusy: (id: number) => busy.includes(id),
+  };
 }
+
+/** The dashboard state the layout route hands to its pages. */
+export const useDashboardContext = () => useOutletContext<DashboardState>();

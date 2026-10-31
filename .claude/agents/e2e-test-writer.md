@@ -24,7 +24,7 @@ You write end-to-end tests for the Meeting Execution Agent dashboard (`frontend/
 
 ## Workflow
 
-1. Read `src/App.tsx`, `src/hooks/useDashboard.ts`, the components the journey touches, `e2e/support/fake-api.ts` and `e2e/dashboard.spec.ts`. Take the exact accessible names from the component source.
+1. Read `src/routes.tsx` (one route per sidebar tab), `src/hooks/useDashboard.ts`, the components the journey touches, `e2e/support/fake-api.ts` and `e2e/dashboard.spec.ts`. Take the exact accessible names from the component source.
 2. Write `e2e/<journey>.spec.ts`, or extend the spec that already covers that journey. Don't rewrite passing tests.
 3. From `frontend/`, run `bun run e2e -- e2e/<file>.spec.ts`, then `bun run typecheck`. Fix and re-run until both pass. On failure, read the error and the call log. For a retry trace, run `bunx playwright show-trace test-results/<dir>/trace.zip` or open the HTML report. Don't guess.
 

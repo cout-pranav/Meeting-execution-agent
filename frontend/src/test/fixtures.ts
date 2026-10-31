@@ -42,3 +42,10 @@ export function makeHealth(overrides: Partial<Health> = {}): Health {
 export function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 }
+
+/** What a stubbed fetch was called with. Axios passes a Request (plus init), so normalize it. */
+export async function sentRequest(input: RequestInfo | URL, init?: RequestInit) {
+  const req = new Request(input, init);
+  const body = await req.text();
+  return { path: new URL(req.url).pathname, method: req.method, body: body ? JSON.parse(body) : undefined };
+}

@@ -4,13 +4,13 @@ import { Icon } from "./ui/Icon";
 
 export type Notice = { tone: "ok" | "bad" | "warn"; text: string };
 
-type Props = { notice: Notice | null; onDismiss: () => void; onRefresh: () => void };
+type Props = { title?: string; notice: Notice | null; onDismiss: () => void; onRefresh: () => void };
 
-export function Header({ notice, onDismiss, onRefresh }: Props) {
+export function Header({ title = "Decision Intelligence", notice, onDismiss, onRefresh }: Props) {
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b border-line bg-canvas/80 px-6 backdrop-blur-xl">
       <div className="flex items-center gap-1.5 text-[12px] text-ink-2">
-        <span>Workspace</span><Icon name="chevron_right" className="text-[14px]" /><span className="font-medium text-ink">Decision Intelligence</span>
+        <span>Workspace</span><Icon name="chevron_right" className="text-[14px]" /><span className="font-medium text-ink">{title}</span>
       </div>
       <div className="flex items-center gap-3">
         {notice && (

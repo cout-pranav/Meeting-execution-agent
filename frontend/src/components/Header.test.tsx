@@ -17,6 +17,12 @@ describe("Header", () => {
     expect(screen.getByText("Decision Intelligence")).toBeInTheDocument();
   });
 
+  it("shows the current page title in the breadcrumb", () => {
+    renderHeader({ title: "Memory Ledger" });
+    expect(screen.getByText("Memory Ledger")).toBeInTheDocument();
+    expect(screen.queryByText("Decision Intelligence")).not.toBeInTheDocument();
+  });
+
   it("has no notice by default", () => {
     renderHeader();
     expect(screen.queryByRole("status")).not.toBeInTheDocument();

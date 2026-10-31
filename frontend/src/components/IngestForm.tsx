@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { api } from "../api";
+import { useIngestMeeting } from "../hooks/queries";
 import { plural, today } from "../lib/format";
 import type { Health } from "../types";
 import { Button } from "./ui/Button";
@@ -12,8 +12,9 @@ export function IngestForm({ health, onDone }: Props) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(today());
   const [transcript, setTranscript] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const ingest = useIngestMeeting();
+  const busy = ingest.isPending;
+  const err = ingest.error?.message;
 
   async function loadFile(file: File | undefined) {
     if (!file) return;
@@ -21,20 +22,15 @@ export function IngestForm({ health, onDone }: Props) {
     if (!title) setTitle(file.name.replace(/\.[^.]+$/, "").replace(/[-_]/g, " "));
   }
 
-  async function submit(e: FormEvent) {
+  function submit(e: FormEvent) {
     e.preventDefault();
-    setBusy(true);
-    setErr(null);
-    try {
-      const r = await api<{ items: unknown[]; conflicts: unknown[] }>("/api/meetings", { title, transcript, date });
-      setTranscript("");
-      setTitle("");
-      onDone(`Extracted ${plural(r.items.length, "item")} · ${plural(r.conflicts.length, "conflict")} flagged`);
-    } catch (e) {
-      setErr((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
+    ingest.mutate({ title, transcript, date }, {
+      onSuccess: (r) => {
+        setTranscript("");
+        setTitle("");
+        onDone(`Extracted ${plural(r.items.length, "item")} · ${plural(r.conflicts.length, "conflict")} flagged`);
+      },
+    });
   }
 
   return (

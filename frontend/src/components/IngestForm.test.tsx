@@ -1,7 +1,8 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { jsonResponse } from "../test/fixtures";
+import { jsonResponse, sentRequest } from "../test/fixtures";
+import { renderWithProviders as render } from "../test/render";
 import type { Health } from "../types";
 import { IngestForm } from "./IngestForm";
 
@@ -35,9 +36,10 @@ describe("IngestForm", () => {
     await fill();
 
     await waitFor(() => expect(onDone).toHaveBeenCalledWith("Extracted 2 items · 1 conflict flagged"));
-    const [path, init] = fetch.mock.calls[0]!;
+    const [input, init] = fetch.mock.calls[0]!;
+    const { path, body } = await sentRequest(input, init);
     expect(path).toBe("/api/meetings");
-    expect(JSON.parse(init.body)).toEqual({ title: "Platform Sync", transcript: "Priya: Ship it.", date: "2026-10-20" });
+    expect(body).toEqual({ title: "Platform Sync", transcript: "Priya: Ship it.", date: "2026-10-20" });
     expect(screen.getByLabelText("Transcript")).toHaveValue("");
   });
 
