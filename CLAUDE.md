@@ -33,13 +33,14 @@ Do not bring in anything from the "Deferred" list in implementation-plan.md unle
 
 There are two projects:
 - **API** (repo root, `src/server/`): Bun + `Bun.serve` `/api/*` routes only · AI SDK (`ai`, `@ai-sdk/google`) with Gemini Flash and Zod `Output.object` · Octokit · Postgres via `Bun.sql`.
-- **Frontend** (`frontend/`): a separate Vite + React + TypeScript + Tailwind v4 app. Bun **does not serve it**. In dev, Vite proxies `/api` to :3000; in Docker, nginx serves `dist/` and proxies `/api` to the `app` container. Tests use Vitest + Testing Library + jsdom. Design tokens are in `frontend/src/styles.css`.
+- **Frontend** (`frontend/`): a separate Vite + React + TypeScript + Tailwind v4 app. Bun **does not serve it**. In dev, Vite proxies `/api` to :3000; in Docker, nginx serves `dist/` and proxies `/api` to the `app` container. Unit and component tests use Vitest + Testing Library + jsdom (`src/**/*.test.{ts,tsx}` only). End-to-end tests use Playwright (Chromium) in `frontend/e2e/`. By default (`mocked` project) they drive the real UI against an in-memory fake of the API (`e2e/support/fake-api.ts`, `page.route`), so they need no server, DB or keys. The opt-in `live` project (`e2e/live/`) runs against the real Bun API + Postgres + Gemini. Design tokens are in `frontend/src/styles.css`.
 
 Frontend structure: `App.tsx` only composes; state lives in `hooks/useDashboard.ts`; derived lists come from the pure `lib/selectors.ts` (`deriveDashboard`); each section is its own prop-driven component in `components/` with a colocated `*.test.tsx`; shared primitives are in `components/ui/`. Keep new UI in this shape: props in, callbacks out, no fetches inside components (except `IngestForm`'s submit).
 
 ## Agents
 
 - **`component-test-writer`** ([.claude/agents/component-test-writer.md](.claude/agents/component-test-writer.md)) writes Vitest + React Testing Library tests in the house style. Delegate to it whenever a component in `frontend/src/components/` is added or its behavior changes. Every component needs a colocated `*.test.tsx`. The agent only touches test files and `src/test/fixtures.ts`, and reports any accessibility gaps or bugs it finds instead of changing the component.
+- **`e2e-test-writer`** ([.claude/agents/e2e-test-writer.md](.claude/agents/e2e-test-writer.md)) writes Playwright end-to-end specs for user journeys that span components and `/api`: ingest → review → approve or reject → memory ledger or tracker, and conflict callouts. Delegate to it when such a flow changes, or when a new UI flow or API route is added. The split: `component-test-writer` covers one component in jsdom, and `e2e-test-writer` covers whole journeys in a real browser. It only touches `frontend/e2e/`, and it writes or runs `live/` specs only when asked, because those hit Gemini, write to Postgres and can create real GitHub issues. **When `src/server/index.ts` changes, `e2e/support/fake-api.ts` must be updated to match.**
 
 ## Commands
 
@@ -49,6 +50,10 @@ bun install && bun run dev                # API with hot reload on :3000
 cd frontend && bun install && bun run dev # dashboard on :5173
 cd frontend && bun run test               # frontend tests (no server needed)
 cd frontend && bun run test -- src/components/X.test.tsx  # one test file
+cd frontend && bun run e2e                # Playwright E2E, mocked API (auto-starts Vite; no API/DB needed)
+cd frontend && bun run e2e -- e2e/X.spec.ts  # one spec
+cd frontend && bun run e2e:ui             # Playwright UI mode
+cd frontend && bun run e2e:live           # real API + DB + Gemini (start db and root `bun run dev` first)
 bun test                                  # API health tests (API must be running; bunfig limits them to src/)
 bun run typecheck                         # in root and in frontend/
 docker compose up --build                 # db + app (:3000) + web (:8080)

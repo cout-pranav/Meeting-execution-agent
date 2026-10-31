@@ -24,4 +24,21 @@ describe("TrackerDispatch", () => {
     expect(screen.getByText("Unassigned · no deadline")).toBeInTheDocument();
     expect(screen.getByText("acme/app")).toBeInTheDocument();
   });
+
+  it("omits the repo label when there is no repo", () => {
+    render(<TrackerDispatch repo={null} dispatched={[makeItem({ type: "action" })]} />);
+    expect(screen.queryByText(/\//)).not.toBeInTheDocument();
+  });
+
+  it("shows owner and deadline when set", () => {
+    render(<TrackerDispatch repo="acme/app" dispatched={[makeItem({ type: "action", owner: "Priya", deadline: "2026-12-01" })]} />);
+    expect(screen.getByText("Priya · 2026-12-01")).toBeInTheDocument();
+  });
+
+  it("opens issue links in a new tab", () => {
+    render(<TrackerDispatch repo="acme/app" dispatched={[makeItem({ type: "action", issue_url: "https://github.com/acme/app/issues/5" })]} />);
+    const link = screen.getByRole("link", { name: /#5/ });
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", expect.stringContaining("noreferrer"));
+  });
 });

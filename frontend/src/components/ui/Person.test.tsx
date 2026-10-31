@@ -13,4 +13,15 @@ describe("Person", () => {
     expect(screen.getByText("ER")).toBeInTheDocument();
     expect(screen.getByText("Elena Rostova")).toBeInTheDocument();
   });
+
+  it("uses a single initial for a one-word name", () => {
+    render(<Person name="Marcus" />);
+    expect(screen.getByText("M")).toBeInTheDocument();
+  });
+
+  it("caps initials at two uppercase letters", () => {
+    render(<Person name="ada king lovelace" />);
+    expect(screen.getByText("AK")).toBeInTheDocument();
+    expect(screen.queryByText("No owner")).not.toBeInTheDocument();
+  });
 });
