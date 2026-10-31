@@ -1,6 +1,6 @@
 # CLAUDE.md — Meeting Execution Agent
 
-An agent that turns speaker-labeled meeting transcripts into owned, tracked work (GitHub Issues). It remembers decisions across meetings and flags new decisions that contradict earlier ones. Hackathon project; so far the repo holds only planning docs.
+An agent that turns speaker-labeled meeting transcripts into owned, tracked work (GitHub Issues). It remembers decisions across meetings and flags new decisions that contradict earlier ones. Hackathon project: the Bun API (`src/server/`) and the React dashboard (`frontend/`) are both in place.
 
 ## Project docs (read before building)
 
@@ -37,6 +37,10 @@ There are two projects:
 
 Frontend structure: `App.tsx` only composes; state lives in `hooks/useDashboard.ts`; derived lists come from the pure `lib/selectors.ts` (`deriveDashboard`); each section is its own prop-driven component in `components/` with a colocated `*.test.tsx`; shared primitives are in `components/ui/`. Keep new UI in this shape: props in, callbacks out, no fetches inside components (except `IngestForm`'s submit).
 
+## Agents
+
+- **`component-test-writer`** ([.claude/agents/component-test-writer.md](.claude/agents/component-test-writer.md)) writes Vitest + React Testing Library tests in the house style. Delegate to it whenever a component in `frontend/src/components/` is added or its behavior changes. Every component needs a colocated `*.test.tsx`. The agent only touches test files and `src/test/fixtures.ts`, and reports any accessibility gaps or bugs it finds instead of changing the component.
+
 ## Commands
 
 ```bash
@@ -44,6 +48,7 @@ docker compose up -d db                   # Postgres (local .env points DATABASE
 bun install && bun run dev                # API with hot reload on :3000
 cd frontend && bun install && bun run dev # dashboard on :5173
 cd frontend && bun run test               # frontend tests (no server needed)
+cd frontend && bun run test -- src/components/X.test.tsx  # one test file
 bun test                                  # API health tests (API must be running; bunfig limits them to src/)
 bun run typecheck                         # in root and in frontend/
 docker compose up --build                 # db + app (:3000) + web (:8080)
