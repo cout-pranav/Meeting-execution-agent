@@ -143,7 +143,7 @@ bun --hot src/server/index.ts    # API + React with HMR
 ## 8. Open Tech Questions
 
 - **Dashboard auth:** no auth or a shared password for the demo, versus GitHub OAuth. This ties into project-scope G6 (who confirms).
-- **Gemini model and limits:** the exact Gemini Flash model ID, and whether free-tier rate limits are enough for the demo.
+- **Gemini model and limits:** *Model settled (2026-10-31):* `GEMINI_MODEL=gemini-3.5-flash`. The newer `gemini-3.7-flash`, `gemini-3.8-flash` and `gemini-flash-latest` were returning "high demand" errors, and `gemini-2.5-flash` is closed to new users. Still open: whether free-tier rate limits are enough for the demo.
 - **Embedding dimension:** 768, 1536 or 3072. A smaller dimension is cheaper and faster. Once chosen, it's fixed in the `vector(n)` column.
 - **Docker host:** a local machine for the demo, a cloud VM, or a PaaS.
 - **In-process cron:** `Bun.cron` doesn't run while the app is down. Reminder and digest jobs should be idempotent catch-up scans tracked through `reminders_sent`.
