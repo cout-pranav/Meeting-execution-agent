@@ -22,8 +22,13 @@ test("meeting 2 contradicts a decision approved in meeting 1", async ({ page, re
   await page.getByRole("button", { name: "Extract & check conflicts" }).click();
   await expect(notice).toContainText("Extracted", { timeout: 90_000 });
 
-  // The group <div> holding meeting 1's header and rows (ancestors match too; the innermost is last).
-  const meeting1 = queue.locator("div").filter({ has: page.getByText(`E2E meeting 1 ${run}`, { exact: true }) }).last();
+  // The group <div> holding meeting 1's header and rows. `has` also matches the header <div> itself,
+  // so require the list too; ancestors still match, and the innermost is last.
+  const meeting1 = queue
+    .locator("div")
+    .filter({ has: page.getByText(`E2E meeting 1 ${run}`, { exact: true }) })
+    .filter({ has: page.getByRole("list") })
+    .last();
   await expect(meeting1.getByRole("listitem").first()).toBeVisible();
   const approvable = meeting1.getByRole("listitem").filter({ hasText: approveActions ? /DECISION|ACTION/ : "DECISION" });
   // Approved rows leave the queue, so keep approving the first one until none are left.
