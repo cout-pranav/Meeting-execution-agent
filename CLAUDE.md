@@ -33,15 +33,17 @@ Do not bring in anything from the "Deferred" list in implementation-plan.md unle
 
 Bun (runtime, bundler, tests, `Bun.serve` routes + HTML import) · React + TypeScript + Tailwind (+ shadcn/ui if it installs quickly) · AI SDK (`ai`, `@ai-sdk/google`) with Gemini Flash and Zod `Output.object` · Octokit · Postgres · Docker multi-stage + compose. Use the `frontend-design` skill for the UI pass (T5).
 
-## Commands (once scaffolded)
+## Commands
 
 ```bash
-docker compose up -d db          # Postgres
+docker compose up -d db          # Postgres (local .env points DATABASE_URL at it)
 bun install
-bun --hot src/server/index.ts    # dev server
-bun test
+bun run dev                      # dev server with HMR on :3000
+bun run typecheck
 docker compose up --build        # full deploy check
 ```
+
+In production (`NODE_ENV=production`) Bun bundles the HTML import with the Tailwind plugin from `bunfig.toml` once at startup, so the Dockerfile has no separate `bun build` step. That's why `tailwindcss` and `bun-plugin-tailwind` are runtime dependencies.
 
 ## Verification
 

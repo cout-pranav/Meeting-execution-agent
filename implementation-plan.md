@@ -74,15 +74,39 @@ Meeting-execution-agent/
 
 `DATABASE_URL`, `GOOGLE_GENERATIVE_AI_API_KEY`, `GEMINI_MODEL`, `GITHUB_TOKEN`, `GITHUB_REPO` (`owner/repo`)
 
-## Timeboxed Tasks
+## Phases & Timeboxed Tasks
+
+| Phase | Time | Goal | Tasks |
+|---|---|---|---|
+| 1. Foundation | 0:00–0:15 | A running skeleton | T1 |
+| 2. Intelligence core | 0:15–1:05 | Extraction + the differentiator | T2, T3 |
+| 3. Human approval & dispatch | 1:05–1:40 | Review in the browser, then act | T4, T5 |
+| 4. Ship | 1:40–2:00 | Deployed and documented | T6, T7 |
+
+### Phase 1: Foundation (0:00–0:15)
 
 | Time | Task | Done when |
 |---|---|---|
 | 0:00–0:15 | **T1 Setup:** `bun init`, install deps, `.env`, `docker compose up -d db`, `Bun.serve` serving the React page + `/api/health` | Page loads; DB connects |
+
+### Phase 2: Intelligence core (0:15–1:05)
+
+| Time | Task | Done when |
+|---|---|---|
 | 0:15–0:45 | **T2 Extraction:** Zod schema, Gemini prompt, `POST /api/meetings` storing pending items. Write the two fixtures. | Meeting 1 returns sensible items with quotes |
 | 0:45–1:05 | **T3 Conflict detection:** pass the prior approved decisions to Gemini and store the conflicts it finds | Meeting 2 flags the planted conflict |
+
+### Phase 3: Human approval & dispatch (1:05–1:40)
+
+| Time | Task | Done when |
+|---|---|---|
 | 1:05–1:15 | **T4 Approve + GitHub:** approve/reject routes; approving an action creates an issue | A real issue appears in the demo repo |
 | 1:15–1:40 | **T5 UI:** a quick `frontend-design` skill pass for visual direction. Textarea + submit; item cards (quote, owner, deadline, approve/reject); a conflict callout citing the earlier decision | Full demo flow works in the browser |
+
+### Phase 4: Ship (1:40–2:00)
+
+| Time | Task | Done when |
+|---|---|---|
 | 1:40–1:55 | **T6 Docker deploy:** multi-stage Dockerfile (`oven/bun`), compose `app` + `db` (with a volume), `docker compose up --build` | Demo works from the container |
 | 1:55–2:00 | **T7 README:** run steps + demo script | Done |
 

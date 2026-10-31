@@ -1,0 +1,13 @@
+Priya: Okay, let's get started. First item is our database migration policy.
+Marcus: After the outage in August, I want us to commit to continuous schema migrations. No migration freezes. Freezes just pile up risky changes and then everything breaks at once.
+Elena: Agreed. So the decision is: we ship PostgreSQL schema migrations continuously, and we don't do migration freezes.
+Priya: Decided. Next, the v2.4 launch.
+Elena: We're targeting December 12 for the v2.4 launch.
+Marcus: That works as long as the billing API is finished.
+Priya: Marcus, can you own the billing API and have it done by November 28?
+Marcus: Yes, I'll have the billing API done by November 28.
+Priya: Elena, please write the launch checklist by next Friday.
+Elena: Will do.
+Priya: Last thing: we'll use GitHub Issues as the single tracker for all launch work. Everyone okay with that?
+Marcus: Yes.
+Elena: Yes, let's go with GitHub Issues.

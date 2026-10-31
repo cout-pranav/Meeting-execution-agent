@@ -1,0 +1,9 @@
+Elena: Holiday traffic is going to be heavy, and I'm worried about database strain during the launch.
+Priya: What do you propose?
+Elena: Let's freeze all PostgreSQL migrations until v2.4 ships in mid-December. No schema changes until then.
+Marcus: That's a big change from what we agreed, but fine for now.
+Priya: Okay, decision: we freeze PostgreSQL migrations until the v2.4 launch.
+Priya: The launch date stays December 12.
+Priya: Marcus, please set up a load test for the checkout flow by December 1.
+Marcus: I'll do it.
+Elena: I'll also update the on-call rota before the launch.
