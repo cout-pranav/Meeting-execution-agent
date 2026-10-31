@@ -18,15 +18,24 @@ Needs Docker, plus a Gemini API key. A GitHub fine-grained PAT with Issues read/
 
 ```bash
 cp .env.example .env              # fill in GOOGLE_GENERATIVE_AI_API_KEY, GEMINI_MODEL, GITHUB_TOKEN, GITHUB_REPO
-docker compose up --build         # app + Postgres → http://localhost:3000
+docker compose up --build         # dashboard → http://localhost:8080 · API → http://localhost:3000/api
 ```
 
-Local development (requires [Bun](https://bun.sh)):
+The project has two parts: the **Bun API** in the repo root and a separate **React frontend** in [`frontend/`](frontend/) (Vite; nginx in Docker).
+
+Local development (requires [Bun](https://bun.sh)). Use two terminals:
 
 ```bash
 docker compose up -d db
-bun install
-bun run dev                       # http://localhost:3000 with hot reload
+bun install && bun run dev                    # API on :3000
+cd frontend && bun install && bun run dev     # dashboard on http://localhost:5173 (proxies /api → :3000)
+```
+
+Tests:
+
+```bash
+cd frontend && bun run test       # component + unit tests (Vitest, no server needed)
+bun test                          # API health checks (needs the API running)
 ```
 
 If `GITHUB_TOKEN`/`GITHUB_REPO` are unset, approving an action item still works but creates no issue.

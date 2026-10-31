@@ -1,6 +1,5 @@
 import { sql } from "bun";
 import { z } from "zod";
-import index from "../web/index.html";
 import { extractItems, findConflicts, type PriorDecision } from "./ai";
 import { createIssue, githubConfigured } from "./github";
 
@@ -55,11 +54,8 @@ async function setStatus(id: number, status: "approved" | "rejected") {
 
 const server = Bun.serve({
   port: Number(process.env.PORT ?? 3000),
-  development: process.env.NODE_ENV !== "production" && { hmr: true, console: true },
 
   routes: {
-    "/": index,
-
     "/api/health": {
       async GET() {
         const db = await sql`SELECT 1`.then(() => true, () => false);
@@ -147,4 +143,4 @@ const server = Bun.serve({
   },
 });
 
-console.log(`Meeting Execution Agent running at ${server.url}`);
+console.log(`Meeting Execution Agent API running at ${server.url}api`);

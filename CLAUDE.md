@@ -31,19 +31,23 @@ Do not bring in anything from the "Deferred" list in implementation-plan.md unle
 
 ## Stack at a glance
 
-Bun (runtime, bundler, tests, `Bun.serve` routes + HTML import) · React + TypeScript + Tailwind (+ shadcn/ui if it installs quickly) · AI SDK (`ai`, `@ai-sdk/google`) with Gemini Flash and Zod `Output.object` · Octokit · Postgres · Docker multi-stage + compose. Use the `frontend-design` skill for the UI pass (T5).
+There are two projects:
+- **API** (repo root, `src/server/`): Bun + `Bun.serve` `/api/*` routes only · AI SDK (`ai`, `@ai-sdk/google`) with Gemini Flash and Zod `Output.object` · Octokit · Postgres via `Bun.sql`.
+- **Frontend** (`frontend/`): a separate Vite + React + TypeScript + Tailwind v4 app. Bun **does not serve it**. In dev, Vite proxies `/api` to :3000; in Docker, nginx serves `dist/` and proxies `/api` to the `app` container. Tests use Vitest + Testing Library + jsdom. Design tokens are in `frontend/src/styles.css`.
+
+Frontend structure: `App.tsx` only composes; state lives in `hooks/useDashboard.ts`; derived lists come from the pure `lib/selectors.ts` (`deriveDashboard`); each section is its own prop-driven component in `components/` with a colocated `*.test.tsx`; shared primitives are in `components/ui/`. Keep new UI in this shape: props in, callbacks out, no fetches inside components (except `IngestForm`'s submit).
 
 ## Commands
 
 ```bash
-docker compose up -d db          # Postgres (local .env points DATABASE_URL at it)
-bun install
-bun run dev                      # dev server with HMR on :3000
-bun run typecheck
-docker compose up --build        # full deploy check
+docker compose up -d db                   # Postgres (local .env points DATABASE_URL at it)
+bun install && bun run dev                # API with hot reload on :3000
+cd frontend && bun install && bun run dev # dashboard on :5173
+cd frontend && bun run test               # frontend tests (no server needed)
+bun test                                  # API health tests (API must be running; bunfig limits them to src/)
+bun run typecheck                         # in root and in frontend/
+docker compose up --build                 # db + app (:3000) + web (:8080)
 ```
-
-In production (`NODE_ENV=production`) Bun bundles the HTML import with the Tailwind plugin from `bunfig.toml` once at startup, so the Dockerfile has no separate `bun build` step. That's why `tailwindcss` and `bun-plugin-tailwind` are runtime dependencies.
 
 ## Verification
 

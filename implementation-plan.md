@@ -27,8 +27,8 @@ Related docs: [project-scope.md](project-scope.md) · [techstack.md](techstack.m
 
 ### Simplified stack
 
-- **Bun** with `Bun.serve`: an HTML import for the React page, plus the `/api/*` routes
-- **React + Tailwind** (`bun-plugin-tailwind`), with a few shadcn/ui components if they install quickly
+- **Bun** with `Bun.serve`: the `/api/*` routes only
+- **Frontend:** a separate **Vite + React + Tailwind** project in `frontend/` (Vitest for component tests), served by nginx in Docker, with a few shadcn/ui components if they install quickly
 - **AI:** `ai` + `@ai-sdk/google` + `zod`
 - **GitHub:** `@octokit/rest`
 - **DB:** `Bun.sql` against Postgres, with `CREATE TABLE IF NOT EXISTS` on boot (no ORM or migrations)
@@ -37,17 +37,20 @@ Related docs: [project-scope.md](project-scope.md) · [techstack.md](techstack.m
 
 ```
 Meeting-execution-agent/
-├── package.json
-├── bunfig.toml              # Tailwind plugin
+├── package.json             # API
 ├── .env.example
-├── src/
-│   ├── server/
-│   │   ├── index.ts         # Bun.serve routes + DB bootstrap
-│   │   ├── ai.ts            # extractItems(), findConflicts()
-│   │   └── github.ts        # createIssue()
-│   └── web/
-│       ├── index.html
-│       └── App.tsx          # single page
+├── src/server/
+│   ├── index.ts             # Bun.serve /api routes + DB bootstrap
+│   ├── ai.ts                # extractItems(), findConflicts()
+│   └── github.ts            # createIssue()
+├── frontend/                # separate React app (Vite)
+│   ├── vite.config.ts       # /api proxy → :3000, Vitest config
+│   ├── Dockerfile + nginx.conf
+│   └── src/
+│       ├── App.tsx          # layout composition
+│       ├── hooks/useDashboard.ts
+│       ├── lib/             # format + deriveDashboard() selectors
+│       └── components/      # one file per section, ui/ primitives, *.test.tsx
 ├── fixtures/
 │   ├── meeting-1.txt
 │   └── meeting-2.txt        # contains the planted conflict
@@ -87,7 +90,7 @@ Meeting-execution-agent/
 
 | Time | Task | Done when |
 |---|---|---|
-| 0:00–0:15 | **T1 Setup:** `bun init`, install deps, `.env`, `docker compose up -d db`, `Bun.serve` serving the React page + `/api/health` | Page loads; DB connects |
+| 0:00–0:15 | **T1 Setup:** `bun init`, install deps, `.env`, `docker compose up -d db`, `Bun.serve` with `/api/health`, Vite serving the React page | Page loads; DB connects |
 
 ### Phase 2: Intelligence core (0:15–1:05)
 

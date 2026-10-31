@@ -1,2 +1,3 @@
-[serve.static]
-plugins = ["bun-plugin-tailwind"]
+# Keep `bun test` on the API; the frontend has its own Vitest suite.
+[test]
+root = "src"

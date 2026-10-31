@@ -4,7 +4,9 @@ Scope and features are in [project-scope.md](project-scope.md).
 
 ## 1. Overview & Architecture
 
-One TypeScript repo, run as **one Bun process**. That process serves the React dashboard, the REST API and the scheduled jobs. It talks to Postgres + pgvector, the Gemini API (through the AI SDK), the GitHub API and the Slack API.
+One TypeScript repo with **two projects**. A **Bun process** runs the REST API and the scheduled jobs. It talks to Postgres + pgvector, the Gemini API (through the AI SDK), the GitHub API and the Slack API. The React dashboard is a **separate Vite project** (`frontend/`), not served by Bun: Vite serves it in dev and nginx in Docker, and both proxy `/api` to the Bun process.
+
+> **Decision (2026-10-31):** the frontend was split out of the Bun process. The diagram and project tree below still show the earlier single-process layout for `/*`; read `"/*" → React SPA` as served by nginx/Vite, and `src/web/` as `frontend/src/`.
 
 ```
                 ┌──────────────────────────── Bun process (Bun.serve) ─────────────────────────────┐
@@ -28,10 +30,10 @@ One TypeScript repo, run as **one Bun process**. That process serves the React d
 | Layer | Choice | Why |
 |---|---|---|
 | Runtime, package manager, bundler, test runner | **Bun** (`bun install`, `bun --hot`, `bun build`, `bun test`) | One tool for everything. Fast. Native TypeScript. |
-| Frontend | **React + TypeScript** | Required. Served through a Bun **HTML import** on a `/*` catch-all route, so Vite isn't needed. |
+| Frontend | **React + TypeScript**, built with **Vite** in `frontend/` | Required. A separate project: Vite dev server with an `/api` proxy, and static `dist/` served by **nginx** in Docker. |
 | Client routing | **React Router** (declarative / data mode, SPA) | Routing for the dashboard pages. |
 | Server state | **TanStack Query** | Caching, refetching, and mutation state for approve/edit/reject. |
-| Styling | **Tailwind CSS** | Utility-first. Works with Bun's bundler. |
+| Styling | **Tailwind CSS v4** (`@tailwindcss/vite`) | Utility-first. Design tokens live in `@theme`. |
 | Components | **shadcn/ui** (copied into `src/web/components/ui`) | Accessible primitives (Radix) that we own and can restyle. |
 | UI design workflow | **Claude Code `frontend-design` skill** | Sets the dashboard's visual direction, typography and layout so it doesn't look like a template. Built with shadcn/ui + Tailwind. |
 | Forms & validation | **React Hook Form + Zod** | The Zod schemas live in `src/shared` and are used by both frontend and backend. |
@@ -45,7 +47,7 @@ One TypeScript repo, run as **one Bun process**. That process serves the React d
 | Notifications | **Slack Web API** (`@slack/web-api`) | `chat.postMessage` DMs from a bot token. Approval happens in the dashboard, so Bolt and interactivity aren't needed. |
 | Scheduler | **`Bun.cron`** (in-process) | Hourly scan for reminders. Weekly digest, with the `tz` option for timezones. |
 | Transcript parsing | Small hand-written VTT / SRT / TXT parser | The formats are simple, so no dependency is needed. |
-| Testing | **`bun test`** | Unit tests for the parsers and services. Fixture transcripts include a planted conflict. |
+| Testing | **`bun test`** (API) · **Vitest + Testing Library + jsdom** (frontend) | Unit tests for the parsers and services; component tests for every dashboard section. Fixture transcripts include a planted conflict. |
 | Lint & format | **Biome** | One fast tool for both. |
 | Deployment | **Docker** (multi-stage Dockerfile + docker-compose) | One reproducible setup for the app and Postgres. |
 
